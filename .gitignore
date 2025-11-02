@@ -1,0 +1,27 @@
+# Qt / Build folders
+build/
+*.pro.user
+*.pro.user.*
+*.qmlc
+*.jsc
+*.autosave
+*.o
+*.obj
+*.exe
+*.dll
+*.pdb
+*.moc
+Makefile*
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Temporary
+*.cache
+*.qrc.dep
+
+# Python or misc
+__pycache__/
+*.pyc

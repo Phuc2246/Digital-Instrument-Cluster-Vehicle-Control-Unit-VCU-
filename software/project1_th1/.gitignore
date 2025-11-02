@@ -1,0 +1,36 @@
+# Qt Creator / QMake
+*.user
+*.pro.user*
+*.qbs.user*
+*.qbs.user
+.qmake.stash
+*.qm
+
+# Build artifacts
+build*/
+out*/
+bin/
+obj/
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+Makefile
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+moc_*
+ui_*
+qrc_*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
