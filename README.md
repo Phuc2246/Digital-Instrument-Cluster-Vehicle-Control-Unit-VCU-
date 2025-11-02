@@ -69,3 +69,14 @@ Below are sample dashboards from the running system:
 </p>
 
 ---
+
+### 🎬 Dashboard Demo
+
+<p align="center">
+  <video width="600" controls>
+    <source src="Screenshort/demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</p>
+
+---
