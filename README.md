@@ -70,12 +70,13 @@ Below are sample dashboards from the running system:
 
 ---
 
-### 🎬 Dashboard Demo
+### 🎥 Demo Video
 <p align="center">
-  <a href="Screenshort/cluster_demo.mp4">
-    <img src="Screenshort/1.png" width="600" alt="Watch demo video"/>
+  <a href="https://youtu.be/OBPhksNRLyU">
+    <img src="https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg" width="600" alt="Demo Video"/>
   </a>
-  <br>▶️ Click the image to open/download the demo video.
+  <br>▶️ Click the image to watch on YouTube.
 </p>
+
 
 ---
