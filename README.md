@@ -71,12 +71,11 @@ Below are sample dashboards from the running system:
 ---
 
 ### 🎬 Dashboard Demo
-
 <p align="center">
-  <video width="600" controls>
-    <source src="Screenshort/cluster_demo.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <a href="Screenshort/cluster_demo.mp4">
+    <img src="Screenshort/1.png" width="600" alt="Watch demo video"/>
+  </a>
+  <br>▶️ Click the image to open/download the demo video.
 </p>
 
 ---
