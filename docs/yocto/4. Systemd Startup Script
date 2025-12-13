@@ -1,0 +1,213 @@
+# Systemd Startup Script
+
+This document describes a custom **systemd startup mechanism** used in a Yocto-based Linux system to automatically initialize the CAN interface and launch a Qt application at boot time.
+
+The startup logic is implemented using:
+- A shell startup script
+- A systemd service unit
+- A BitBake recipe to integrate everything into the Yocto image
+
+```
+
+meta-tdieney/
+└── recipes-core/
+└── startup/
+├── files/
+│   ├── mystartup.sh
+│   └── my-startup.service
+└── startup_1.0.bb
+
+````
+
+---
+
+## 1. mystartup.sh (files/mystartup.sh)
+
+```sh
+#!/bin/sh
+
+LOGFILE="/var/log/startup.log"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Startup script started" >> $LOGFILE
+
+# Bring down CAN interface if already up
+ip link set can0 down 2>/dev/null
+
+# Configure CAN interface with fixed bitrate
+ip link set can0 type can bitrate 50000
+ip link set can0 up
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] CAN interface can0 initialized" >> $LOGFILE
+
+# Setup Qt platform
+export QT_QPA_PLATFORM=eglfs
+
+# Launch Qt application
+exec /usr/bin/project1
+````
+
+Make sure the script is executable:
+
+```bash
+chmod +x mystartup.sh
+```
+
+### Explanation
+
+This script is executed automatically at boot by systemd.
+
+Its responsibilities include:
+
+* Logging startup activity to `/var/log/startup.log`
+* Initializing the CAN interface (`can0`) with a predefined bitrate
+* Setting the Qt platform backend
+* Launching the Qt application
+
+Using `exec` replaces the shell process with the Qt application, binding the application lifecycle to the systemd service.
+
+---
+
+## 2. my-startup.service (files/my-startup.service)
+
+```ini
+[Unit]
+Description=Custom startup commands
+After=network.target network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mystartup.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### `[Unit]` section
+
+```ini
+Description=Custom startup commands
+```
+
+* Provides a human-readable description of the service.
+
+```ini
+After=network.target network-online.target
+```
+
+* Ensures the service starts **after the basic network stack is available**.
+* Useful if future startup steps depend on networking.
+
+---
+
+### `[Service]` section
+
+```ini
+Type=oneshot
+```
+
+* The service runs **once** and then exits.
+* Suitable for initialization scripts.
+
+```ini
+ExecStart=/usr/bin/mystartup.sh
+```
+
+* Specifies the startup script executed by systemd.
+
+```ini
+RemainAfterExit=true
+```
+
+* Keeps the service in an “active” state after execution.
+* Makes it easier to inspect the service status using `systemctl`.
+
+---
+
+### `[Install]` section
+
+```ini
+WantedBy=multi-user.target
+```
+
+* Enables the service to run during the normal system boot sequence.
+
+---
+
+## 3. BitBake recipe: startup_1.0.bb (recipes-core/startup/startup_1.0.bb)
+
+```bitbake
+DESCRIPTION = "Custom systemd startup script"
+LICENSE = "CLOSED"
+PRIORITY = "optional"
+
+SRC_URI += "file://my-startup.service \
+            file://mystartup.sh"
+
+inherit systemd
+
+S = "${WORKDIR}"
+
+do_install() {
+    # Install startup script
+    install -d ${D}${bindir}
+    install -m 0755 ${WORKDIR}/mystartup.sh ${D}${bindir}/mystartup.sh
+
+    # Install systemd service
+    install -d ${D}${systemd_system_unitdir}
+    install -m 0644 ${WORKDIR}/my-startup.service \
+        ${D}${systemd_system_unitdir}/my-startup.service
+}
+
+FILES:${PN} += "${systemd_system_unitdir}/my-startup.service"
+
+SYSTEMD_SERVICE:${PN} = "my-startup.service"
+SYSTEMD_AUTO_ENABLE = "enable"
+```
+
+### Explanation
+
+This BitBake recipe:
+
+* Installs the startup shell script into `/usr/bin`
+* Installs the systemd service file into the systemd unit directory
+* Automatically enables the service in the generated image
+
+By inheriting the `systemd` class, Yocto ensures proper integration with the init system.
+
+---
+
+## 4. Add the startup service to the image
+
+In `local.conf` or the image recipe:
+
+```bitbake
+INIT_MANAGER = "systemd"
+IMAGE_INSTALL:append = " startup"
+```
+
+Rebuild the image:
+
+```bash
+bitbake <your-image-name>
+```
+
+After booting the target device, the startup script will run automatically.
+
+---
+
+## 5. Verification
+
+On the target system, verify the startup behavior:
+
+```bash
+systemctl status my-startup.service
+journalctl -u my-startup.service -b
+ip link show can0
+cat /var/log/startup.log
+```
+
+The CAN interface should be active and the Qt application should launch automatically after boot.
+
+```
+
+---
